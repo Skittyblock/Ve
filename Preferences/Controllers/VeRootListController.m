@@ -111,4 +111,15 @@
 	[self reloadSpecifiers];
 	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), (CFStringRef)kNotificationKeyPreferencesReload, nil, nil, YES);
 }
+
+/**
+ * Opens a URL from a LinkCell.
+ */
+- (void)openURL:(PSSpecifier *)specifier {
+    NSString* urlString = [specifier propertyForKey:@"url"];
+    if (urlString) {
+        NSURL* url = [NSURL URLWithString:urlString];
+        [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+    }
+}
 @end

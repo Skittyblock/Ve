@@ -8,6 +8,14 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
+			<string>Original tweak - alexandra (@xkissalexandra)</string>
+			<key>isStaticText</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
 			<string>Implementation of the main specifier - pixelomer</string>
 			<key>isStaticText</key>
 			<true/>

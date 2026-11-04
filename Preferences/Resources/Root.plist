@@ -9,16 +9,6 @@
 			<string>PSGroupCell</string>
 		</dict>
 		<dict>
-			<key>cellClass</key>
-			<string>SingleContactCell</string>
-			<key>displayName</key>
-			<string>Alexandra</string>
-			<key>username</key>
-			<string>AlexandraAurora</string>
-			<key>height</key>
-			<integer>58</integer>
-		</dict>
-		<dict>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
@@ -247,40 +237,16 @@
 			<string>PSGroupCell</string>
 		</dict>
 		<dict>
-			<key>cellClass</key>
-			<string>LinkCell</string>
-			<key>label</key>
-			<string>My Tweaks</string>
-			<key>subtitle</key>
-			<string>Check out my other work.</string>
-			<key>url</key>
-			<string>https://akarii.cafe/user/AlexandraAurora</string>
-			<key>height</key>
-			<integer>54</integer>
-		</dict>
-		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
 			<key>cellClass</key>
 			<string>LinkCell</string>
 			<key>label</key>
 			<string>Source Code</string>
-			<key>subtitle</key>
-			<string>Find it on my GitHub.</string>
 			<key>url</key>
-			<string>https://github.com/AlexandraAurora/Ve</string>
-			<key>height</key>
-			<integer>54</integer>
-		</dict>
-		<dict>
-			<key>cellClass</key>
-			<string>LinkCell</string>
-			<key>label</key>
-			<string>Donate</string>
-			<key>subtitle</key>
-			<string>Let me know that you like what I do.</string>
-			<key>url</key>
-			<string>https://ko-fi.com/AlexandraAurora</string>
-			<key>height</key>
-			<integer>54</integer>
+			<string>https://github.com/Skittyblock/Ve</string>
+			<key>action</key>
+			<string>openURL:</string>
 		</dict>
 	</array>
 	<key>title</key>
