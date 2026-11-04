@@ -6,16 +6,17 @@
 //
 
 #import "VeDetailListController.h"
-#import <objc/runtime.h>
-#import <Preferences/PSSpecifier.h>
-#import "../../../Manager/LogManager.h"
 #import "../../../Manager/Log.h"
-#import "VeAttachmentListController.h"
-#import "../Controllers/Cells/VeDetailCell.h"
-#import "../Controllers/Cells/VeAttachmentCell.h"
-#import "../../../Utils/DateUtil.h"
-#import "../../../Preferences/PreferenceKeys.h"
+#import "../../../Manager/LogManager.h"
 #import "../../../Preferences/NotificationKeys.h"
+#import "../../../Preferences/PreferenceKeys.h"
+#import "../../../Utils/DateUtil.h"
+#import "../Controllers/Cells/VeAttachmentCell.h"
+#import "../Controllers/Cells/VeDetailCell.h"
+#import "VeAttachmentListController.h"
+#import <Preferences/PSSpecifier.h>
+#import <UIKit/UIKit.h>
+#import <objc/runtime.h>
 
 @implementation VeDetailListController
 /**
@@ -41,14 +42,23 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-    [self setRemoveButton:[[UIButton alloc] init]];
-    [[self removeButton] setImage:[[UIImage systemImageNamed:@"minus.circle"] imageWithConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:23 weight:UIImageSymbolWeightRegular]] forState:UIControlStateNormal];
-    [[self removeButton] setTintColor:[UIColor systemRedColor]];
+    UIBarButtonItem *rightButton;
+    if (@available(iOS 26, *)) {
+        UIImage *removeImage = [UIImage systemImageNamed:@"minus"];
+        rightButton = [[UIBarButtonItem alloc] initWithImage:removeImage menu:nil];
+    } else {
+        [self setRemoveButton:[[UIButton alloc] init]];
+        UIImage *removeImage = [[UIImage systemImageNamed:@"minus.circle"] imageWithConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:23 weight:UIImageSymbolWeightRegular]];
+        [[self removeButton] setImage:removeImage forState:UIControlStateNormal];
+        [[self removeButton] setTintColor:[UIColor systemRedColor]];
+        [[self removeButton] setShowsMenuAsPrimaryAction:YES];
+        rightButton = [[UIBarButtonItem alloc] initWithCustomView:[self removeButton]];
+    }
+
+    [self setItem:rightButton];
+    [[self navigationItem] setRightBarButtonItem:[self item]];
 
     [self createRemoveButtonMenu];
-
-    [self setItem:[[UIBarButtonItem alloc] initWithCustomView:[self removeButton]]];
-    [[self navigationItem] setRightBarButtonItem:[self item]];
 }
 
 /**
@@ -189,8 +199,11 @@
 
     UIMenu* menu = [UIMenu menuWithTitle:@"" children:actions];
 
-    [[self removeButton] setMenu:menu];
-    [[self removeButton] setShowsMenuAsPrimaryAction:YES];
+    if (@available(iOS 26, *)) {
+        self.navigationItem.rightBarButtonItem.menu = menu;
+    } else {
+        [[self removeButton] setMenu:menu];
+    }
 }
 
 /**

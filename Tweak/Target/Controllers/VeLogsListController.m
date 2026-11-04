@@ -6,6 +6,7 @@
 //
 
 #import "VeLogsListController.h"
+#include <UIKit/UIKit.h>
 #import <Preferences/PSSpecifier.h>
 #import "../../../Manager/LogManager.h"
 #import "../../../Manager/Log.h"
@@ -51,14 +52,26 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-    [self setFilterButton:[[UIButton alloc] init]];
-    [[self filterButton] setImage:[[UIImage systemImageNamed:@"line.3.horizontal.decrease.circle"] imageWithConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:23 weight:UIImageSymbolWeightRegular]] forState:UIControlStateNormal];
-    [[self filterButton] setTintColor:[UIColor systemBlueColor]];
+
+    UIBarButtonItem *rightButton;
+    if (@available(iOS 26, *)) {
+        UIImage *filterImage = [UIImage systemImageNamed:@"line.3.horizontal.decrease"];
+        rightButton = [[UIBarButtonItem alloc] initWithImage:filterImage menu:nil];
+    } else {
+        [self setFilterButton:[[UIButton alloc] init]];
+        
+        UIImage *filterImage = [[UIImage systemImageNamed:@"line.3.horizontal.decrease.circle"] imageWithConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:23 weight:UIImageSymbolWeightRegular]];
+        [[self filterButton] setImage:filterImage forState:UIControlStateNormal];
+        [[self filterButton] setTintColor:[UIColor systemBlueColor]];
+        [[self filterButton] setShowsMenuAsPrimaryAction:YES];
+
+        rightButton = [[UIBarButtonItem alloc] initWithCustomView:[self filterButton]];
+    }
+
+    [self setItem:rightButton];
+    [[self navigationItem] setRightBarButtonItem:[self item]];
 
     [self createFilterButtonMenu];
-
-    [self setItem:[[UIBarButtonItem alloc] initWithCustomView:[self filterButton]]];
-    [[self navigationItem] setRightBarButtonItem:[self item]];
 }
 
 /**
@@ -86,10 +99,13 @@
         [dateSortingAction setState:UIMenuElementStateOn];
     }
 
-    UIMenu* menu = [UIMenu menuWithTitle:@"" children:@[applicationSortingAction, dateSortingAction]];
+    UIMenu *menu = [UIMenu menuWithTitle:@"" children:@[applicationSortingAction, dateSortingAction]];
 
-    [[self filterButton] setMenu:menu];
-    [[self filterButton] setShowsMenuAsPrimaryAction:YES];
+    if (@available(iOS 26, *)) {
+        self.navigationItem.rightBarButtonItem.menu = menu;
+    } else {
+        [[self filterButton] setMenu:menu];
+    }
 }
 
 /**
