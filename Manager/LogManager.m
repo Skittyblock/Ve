@@ -13,6 +13,7 @@
 #import "../Preferences/NotificationKeys.h"
 #import "../Preferences/PreferenceKeys.h"
 #import "../PrivateHeaders.h"
+#import <roothide.h>
 
 @implementation LogManager
 /**
@@ -25,6 +26,8 @@
     dispatch_once(&onceToken, ^{
         sharedInstance = [LogManager alloc];
         sharedInstance->_fileManager = [NSFileManager defaultManager];
+        sharedInstance->_logsPath = jbroot(@"/var/mobile/Library/codes.aurora.ve/logs.json");
+        sharedInstance->_logsAttachmentPath = jbroot(@"/var/mobile/Library/codes.aurora.ve/attachments/");
     });
 
     return sharedInstance;
@@ -39,6 +42,7 @@
 
 - (void)addLogForBulletin:(BBBulletin *)bulletin {
     NSMutableDictionary* json = [self getJson];
+    if (!json) return;
     NSUInteger lastIdentifier = [self getLastIdentifierFromJson:json];
     NSMutableArray* logs = [self getLogsFromJson:json];
 
@@ -90,6 +94,7 @@
 
 - (void)removeLog:(Log *)log {
     NSMutableDictionary* json = [self getJson];
+    if (!json) return;
     NSMutableArray* logs = [self getLogsFromJson:json];
 
     for (NSDictionary* dictionary in logs) {
@@ -107,6 +112,7 @@
 
 - (void)removeOverdueLogsFromLogs:(NSMutableArray *)logs {
     NSMutableDictionary* json = [self getJson];
+    if (!json) return;
     NSDate* now = [NSDate date];
     NSDate* lastHouseholdDate = [DateUtil getDateFromString:[self getLastHousekeepingDateFromJson:json] withFormat:kLogInternalDateFormat];
 
@@ -157,7 +163,7 @@
 }
 
 - (void)saveAttachmentImage:(UIImage *)image forLog:(Log *)log {
-    NSString* directoryPath = [NSString stringWithFormat:@"%@%lu/", kLogsAttachmentPath, [log identifier]];
+    NSString* directoryPath = [NSString stringWithFormat:@"%@%lu/", _logsAttachmentPath, [log identifier]];
     if (![_fileManager fileExistsAtPath:directoryPath]) {
         [_fileManager createDirectoryAtPath:directoryPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
@@ -172,7 +178,7 @@
 }
 
 - (NSArray *)getAttachmentsForLog:(Log *)log {
-    NSString* directoryPath = [NSString stringWithFormat:@"%@%lu/", kLogsAttachmentPath, [log identifier]];
+    NSString* directoryPath = [NSString stringWithFormat:@"%@%lu/", _logsAttachmentPath, [log identifier]];
     NSArray* directoryContents = [_fileManager contentsOfDirectoryAtPath:directoryPath error:nil];
 
     NSMutableArray* attachments = [[NSMutableArray alloc] init];
@@ -225,10 +231,26 @@
  * @return The dictionary.
  */
 - (NSMutableDictionary *)getJson {
-    [self ensureResourcesExist];
+    if (![self ensureResourcesExist]) return nil;
 
-    NSData* jsonData = [NSData dataWithContentsOfFile:kLogsPath];
-    NSMutableDictionary* json = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:nil];
+    NSError* error = nil;
+    NSData* jsonData = [NSData dataWithContentsOfFile:_logsPath options:0 error:&error];
+    if (!jsonData) {
+        NSLog(@"[Vē] Failed to read logs at %@: %@", _logsPath, error);
+        return nil;
+    }
+
+    id json = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&error];
+    if (![json isKindOfClass:[NSMutableDictionary class]]) {
+        NSLog(@"[Vē] Invalid logs dictionary at %@: %@", _logsPath, error);
+        return nil;
+    }
+    if ((json[kLogsKeyLogs] && ![json[kLogsKeyLogs] isKindOfClass:[NSMutableArray class]]) ||
+        (json[kLogsKeyLastIdentifier] && ![json[kLogsKeyLastIdentifier] isKindOfClass:[NSNumber class]]) ||
+        (json[kLogsKeyLastHousekeepingDate] && ![json[kLogsKeyLastHousekeepingDate] isKindOfClass:[NSString class]])) {
+        NSLog(@"[Vē] Invalid logs schema at %@", _logsPath);
+        return nil;
+    }
 
     return json;
 }
@@ -239,22 +261,35 @@
  * @param dictionary The dictionary from which to save the contents from.
  */
 - (void)setJsonFromDictionary:(NSMutableDictionary *)dictionary {
-    NSData* jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:NSJSONWritingPrettyPrinted error:nil];
-    [jsonData writeToFile:kLogsPath atomically:YES];
+    if (!dictionary || ![NSJSONSerialization isValidJSONObject:dictionary]) {
+        NSLog(@"[Vē] Refusing to save an invalid logs dictionary");
+        return;
+    }
+
+    NSError* error = nil;
+    NSData* jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:NSJSONWritingPrettyPrinted error:&error];
+    if (!jsonData || ![jsonData writeToFile:_logsPath options:NSDataWritingAtomic error:&error]) {
+        NSLog(@"[Vē] Failed to save logs at %@: %@", _logsPath, error);
+    }
 }
 
 /**
  * Creates the json and path for the attachments.
  */
-- (void)ensureResourcesExist {
-    BOOL isDirectory;
-    if (![_fileManager fileExistsAtPath:kLogsAttachmentPath isDirectory:&isDirectory]) {
-        [_fileManager createDirectoryAtPath:kLogsAttachmentPath withIntermediateDirectories:YES attributes:nil error:nil];
+- (BOOL)ensureResourcesExist {
+    NSError* error = nil;
+    if (![_fileManager createDirectoryAtPath:_logsAttachmentPath withIntermediateDirectories:YES attributes:nil error:&error]) {
+        NSLog(@"[Vē] Failed to create logs directory at %@: %@", _logsAttachmentPath, error);
+        return NO;
     }
 
-    if (![_fileManager fileExistsAtPath:kLogsPath]) {
-        NSData* jsonData = [NSJSONSerialization dataWithJSONObject:[[NSMutableDictionary alloc] init] options:NSJSONWritingPrettyPrinted error:nil];
-        [jsonData writeToFile:kLogsPath options:NSDataWritingAtomic error:nil];
+    if (![_fileManager fileExistsAtPath:_logsPath]) {
+        NSData* jsonData = [@"{}" dataUsingEncoding:NSUTF8StringEncoding];
+        if (![jsonData writeToFile:_logsPath options:NSDataWritingAtomic error:&error]) {
+            NSLog(@"[Vē] Failed to create logs at %@: %@", _logsPath, error);
+            return NO;
+        }
     }
+    return YES;
 }
 @end

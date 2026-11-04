@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ "$DPKG_MAINTSCRIPT_ARCH" = "iphoneos-arm64e" ]; then
+  JB=""
+else
+  JB=/var/jb
+  [ -d "$JB" ] || JB=""
+fi
+
+if [ "$1" = "purge" ]; then
+  rm -rf "$JB/var/mobile/Library/codes.aurora.ve"
+fi
+
+exit 0

@@ -6,15 +6,13 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <rootless.h>
 
 @class Log;
 @class BBBulletin;
 
-static NSString* const kLogsPath = ROOT_PATH_NS(@"/var/mobile/Library/codes.aurora.ve/logs.json");
-static NSString* const kLogsAttachmentPath = ROOT_PATH_NS(@"/var/mobile/Library/codes.aurora.ve/attachments/");
-
 @interface LogManager : NSObject {
+    NSString* _logsPath;
+    NSString* _logsAttachmentPath;
     NSFileManager* _fileManager;
 }
 @property(nonatomic)BOOL saveLocalAttachments;

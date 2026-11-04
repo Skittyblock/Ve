@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ "$DPKG_MAINTSCRIPT_ARCH" = "iphoneos-arm64e" ]; then
+  JB=""
+else
+  JB=/var/jb
+  [ -d "$JB" ] || JB=""
+fi
+
+mkdir -p "$JB/var/mobile/Library/codes.aurora.ve/attachments"
+chown -R mobile:mobile "$JB/var/mobile/Library/codes.aurora.ve" 2>/dev/null
+chmod 0755 "$JB/var/mobile/Library/codes.aurora.ve"
+
+exit 0

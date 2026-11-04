@@ -7,6 +7,7 @@
 
 #import "VeTarget.h"
 #import <substrate.h>
+#import <objc/runtime.h>
 #import <Preferences/PSSpecifier.h>
 #import "Controllers/VeLogsListController.h"
 #import "../../Preferences/PreferenceKeys.h"
@@ -39,6 +40,24 @@ static BOOL override_BulletinBoardController_shouldReloadSpecifiersOnResume(Bull
 	return NO;
 }
 
+/**
+ * Installs the BulletinBoardController hooks.
+ */
+static void installBulletinBoardHooks() {
+    static BOOL installed = NO;
+    @synchronized ([VeLogsListController class]) {
+        if (installed) return;
+
+        Class controller = NSClassFromString(@"BulletinBoardController");
+        if (!controller) return;
+
+        installed = YES;
+
+        MSHookMessageEx(controller, @selector(viewDidLoad), (IMP)&override_BulletinBoardController_viewDidLoad, (IMP *)&orig_BulletinBoardController_viewDidLoad);
+        MSHookMessageEx(controller, @selector(shouldReloadSpecifiersOnResume), (IMP)&override_BulletinBoardController_shouldReloadSpecifiersOnResume, nil);
+    }
+}
+
 #pragma mark - PSUIPrefsListController class hooks
 
 /**
@@ -54,8 +73,7 @@ static void override_PSUIPrefsListController_lazyLoadBundle(PSUIPrefsListControl
 
 	if ([[specifier identifier] isEqualToString:@"NOTIFICATIONS_ID"]) {
 		// enable the remaining hooks when the notifications pane is loaded
-		MSHookMessageEx(NSClassFromString(@"BulletinBoardController"), @selector(viewDidLoad), (IMP)&override_BulletinBoardController_viewDidLoad, (IMP *)&orig_BulletinBoardController_viewDidLoad);
-		MSHookMessageEx(NSClassFromString(@"BulletinBoardController"), @selector(shouldReloadSpecifiersOnResume), (IMP)&override_BulletinBoardController_shouldReloadSpecifiersOnResume, nil);
+		installBulletinBoardHooks();
   	}
 }
 
@@ -90,7 +108,15 @@ __attribute((constructor)) static void initialize() {
         return;
     }
 
-	MSHookMessageEx(NSClassFromString(@"PSUIPrefsListController"), @selector(lazyLoadBundle:), (IMP)&override_PSUIPrefsListController_lazyLoadBundle, (IMP *)&orig_PSUIPrefsListController_lazyLoadBundle);
+    if (@available(iOS 27, *)) {
+        // PSUIPrefsListController no longer exists on iOS 27 so we can't use it for bundle load listening
+        [[NSNotificationCenter defaultCenter] addObserverForName:NSBundleDidLoadNotification object:nil queue:nil usingBlock:^(NSNotification* notification) {
+            installBulletinBoardHooks();
+        }];
+        installBulletinBoardHooks();
+    } else {
+        MSHookMessageEx(NSClassFromString(@"PSUIPrefsListController"), @selector(lazyLoadBundle:), (IMP)&override_PSUIPrefsListController_lazyLoadBundle, (IMP *)&orig_PSUIPrefsListController_lazyLoadBundle);
+    }
 
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)load_preferences, (CFStringRef)kNotificationKeyPreferencesReload, NULL, (CFNotificationSuspensionBehavior)kNilOptions);
 }

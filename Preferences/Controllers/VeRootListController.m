@@ -8,7 +8,7 @@
 #include "VeRootListController.h"
 #import <Preferences/PSSpecifier.h>
 #import <LocalAuthentication/LocalAuthentication.h>
-#import <rootless.h>
+#import <roothide.h>
 #import "../PreferenceKeys.h"
 #import "../NotificationKeys.h"
 
@@ -76,7 +76,7 @@
  */
 - (void)respring {
 	NSTask* task = [[NSTask alloc] init];
-	[task setLaunchPath:ROOT_PATH_NS(@"/usr/bin/killall")];
+	[task setLaunchPath:jbroot(@"/usr/bin/killall")];
 	[task setArguments:@[@"backboardd"]];
 	[task launch];
 }
