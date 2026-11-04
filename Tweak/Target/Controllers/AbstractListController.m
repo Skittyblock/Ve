@@ -8,6 +8,7 @@
 #import "AbstractListController.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 #import "Views/BiometricProtectionOverlayView.h"
+#import "../../../Preferences/PreferenceKeys.h"
 
 @implementation AbstractListController
 - (void)viewDidLoad {
@@ -57,7 +58,7 @@
  * @param notification
  */
 - (void)applicationWillEnterForeground:(NSNotification *)notification {
-    [self setWantsAuth:YES];
+    [self setWantsAuth:[self isBiometricProtectionEnabled]];
 }
 
 /**
@@ -66,6 +67,12 @@
  * @param notification
  */
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
+    if (![self isBiometricProtectionEnabled]) {
+        [self setWantsAuth:NO];
+        [self hideBiometricProtectionOverlay];
+        return;
+    }
+
     if ([self wantsAuth]) {
         [self setWantsAuth:NO];
         [self checkBiometrics];
@@ -78,16 +85,33 @@
 }
 
 /**
+ * Checks if the biometric protection setting is enabled.
+ *
+ * @return YES if biometric protection is enabled, NO otherwise.
+ */
+- (BOOL)isBiometricProtectionEnabled {
+    NSUserDefaults* preferences = [[NSUserDefaults alloc] initWithSuiteName:kPreferencesIdentifier];
+    id value = [preferences objectForKey:kPreferenceKeyUseBiometricProtection];
+    return value ? [value boolValue] : kPreferenceKeyUseBiometricProtectionDefaultValue;
+}
+
+/**
  * Performs a biometric protection check.
  *
  * If access granted, the biometric protection overlay view will be hidden.
  * Else, it'll pop the controller.
  */
 - (void)checkBiometrics {
+    [self setWantsAuth:NO];
+    if (![self isBiometricProtectionEnabled]) {
+        [self hideBiometricProtectionOverlay];
+        return;
+    }
+
     LAContext* laContext = [[LAContext alloc] init];
     [laContext evaluatePolicy:LAPolicyDeviceOwnerAuthentication localizedReason:@"Vē needs to make sure you're permitted to view the notification logs." reply:^(BOOL success, NSError* _Nullable error) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (success) {
+            if (success || ![self isBiometricProtectionEnabled]) {
                 [self hideBiometricProtectionOverlay];
             } else {
                 [[self navigationController] popViewControllerAnimated:YES];
@@ -100,7 +124,7 @@
  * Shows the biometric protection overlay.
  */
 - (void)showBiometricProtectionOverlay {
-    [[self biometricProtectionOverlayView] setHidden:NO];
+    [[self biometricProtectionOverlayView] setHidden:![self isBiometricProtectionEnabled]];
 }
 
 /**
