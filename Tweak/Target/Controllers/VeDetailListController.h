@@ -10,7 +10,6 @@
 @class Log;
 
 NSUserDefaults* preferences;
-BOOL pfUseAmericanDateFormat;
 NSMutableArray* pfBlockedSenders;
 
 @interface VeDetailListController : AbstractListController

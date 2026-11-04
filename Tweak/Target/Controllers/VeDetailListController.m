@@ -6,6 +6,7 @@
 //
 
 #import "VeDetailListController.h"
+#include <Foundation/Foundation.h>
 #import "../../../Manager/Log.h"
 #import "../../../Manager/LogManager.h"
 #import "../../../Preferences/NotificationKeys.h"
@@ -121,11 +122,11 @@
     [dateSpecifier setButtonAction:@selector(copyContent:)];
     [dateSpecifier setProperty:@"Date" forKey:@"title"];
 
-    if (pfUseAmericanDateFormat) {
-        [dateSpecifier setProperty:[DateUtil getStringFromDate:[[self log] date] withFormat:@"MM.dd.yyyy hh:mm:ss a"] forKey:@"content"];
-    } else {
-        [dateSpecifier setProperty:[DateUtil getStringFromDate:[[self log] date] withFormat:@"dd.MM.yyyy HH:mm:ss"] forKey:@"content"];
-    }
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    formatter.locale = [NSLocale autoupdatingCurrentLocale];
+    formatter.dateStyle = NSDateFormatterShortStyle;
+    formatter.timeStyle = NSDateFormatterMediumStyle;
+    [dateSpecifier setProperty:[formatter stringFromDate:[[self log] date]] forKey:@"content"];
 
     [specifiers addObject:dateSpecifier];
 
@@ -240,11 +241,9 @@ static void load_preferences() {
     preferences = [[NSUserDefaults alloc] initWithSuiteName:kPreferencesIdentifier];
 
     [preferences registerDefaults:@{
-        kPreferenceKeyUseAmericanDateFormat: kPreferenceKeyUseAmericanDateFormat,
         kPreferenceKeyBlockedSenders: kPreferenceKeyBlockedSendersDefaultValue
     }];
 
-    pfUseAmericanDateFormat = [[preferences objectForKey:kPreferenceKeyUseAmericanDateFormat] boolValue];
     pfBlockedSenders = [[preferences objectForKey:kPreferenceKeyBlockedSenders] mutableCopy];
 }
 @end
