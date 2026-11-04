@@ -50,8 +50,8 @@
 			<string>Log Limit</string>
 		</dict>
 		<dict>
-			<key>cell</key>
-			<string>PSSliderCell</string>
+			<key>cellClass</key>
+			<string>VeSliderCell</string>
 			<key>default</key>
 			<real>200</real>
 			<key>defaults</key>
