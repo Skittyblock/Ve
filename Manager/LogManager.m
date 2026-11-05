@@ -49,9 +49,10 @@
     NSUInteger identifier = lastIdentifier + 1;
     NSString* bundleIdentifier = [bulletin sectionID] ?: @"com.apple.springboard";
     NSString* title = [bulletin title] ?: @"";
+    NSString* subtitle = [bulletin subtitle];
     NSString* content = [bulletin message] ?: @"";
     NSDate* date = [bulletin date] ?: [NSDate date];
-    Log* log = [[Log alloc] initWithIdentifier:identifier bundleIdentifier:bundleIdentifier title:title content:content andDate:date];
+    Log* log = [[Log alloc] initWithIdentifier:identifier bundleIdentifier:bundleIdentifier title:title subtitle:subtitle content:content andDate:date];
 
     // Unseen notifications will be sent again after a respring.
     // We check by date if the notification has been logged already.
@@ -63,6 +64,7 @@
         kLogKeyIdentifier: @(identifier),
         kLogKeyBundleIdentifier: [log bundleIdentifier],
         kLogKeyTitle: [log title],
+        kLogKeySubtitle: [log subtitle],
         kLogKeyContent: [log content],
         kLogKeyDate: [DateUtil getStringFromDate:[log date] withFormat:kLogInternalDateFormat]
     } atIndex:0];

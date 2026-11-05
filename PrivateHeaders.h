@@ -16,6 +16,7 @@
 @interface BBBulletin : NSObject
 @property(nonatomic, copy)NSString* sectionID;
 @property(nonatomic, copy)NSString* title;
+@property(nonatomic, copy)NSString* subtitle;
 @property(nonatomic, copy)NSString* message;
 @property(nonatomic)NSDate* date;
 @property(nonatomic, copy)BBAttachmentMetadata* primaryAttachment;

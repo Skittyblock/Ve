@@ -11,13 +11,14 @@
 #import "../Utils/DateUtil.h"
 
 @implementation Log
-- (instancetype)initWithIdentifier:(NSUInteger)identifier bundleIdentifier:(NSString *)bundleIdentifier title:(NSString *)title content:(NSString *)content andDate:(NSDate *)date {
+- (instancetype)initWithIdentifier:(NSUInteger)identifier bundleIdentifier:(NSString *)bundleIdentifier title:(NSString *)title subtitle:(nullable NSString *)subtitle content:(NSString *)content andDate:(NSDate *)date {
     self = [super init];
 
     if (self) {
         [self setIdentifier:identifier];
         [self setBundleIdentifier:bundleIdentifier];
         [self setTitle:title];
+        [self setSubtitle:subtitle];
         [self setContent:content];
         [self setDate:date];
     }
@@ -29,10 +30,11 @@
     NSUInteger identifier = [dictionary[kLogKeyIdentifier] unsignedIntegerValue];
     NSString* bundleIdentifier = dictionary[kLogKeyBundleIdentifier];
     NSString* title = dictionary[kLogKeyTitle];
+    NSString* subtitle = dictionary[kLogKeySubtitle];
     NSString* content = dictionary[kLogKeyContent];
     NSDate* date = [DateUtil getDateFromString:dictionary[kLogKeyDate] withFormat:kLogInternalDateFormat];
 
-    return [[Log alloc] initWithIdentifier:identifier bundleIdentifier:bundleIdentifier title:title content:content andDate:date];
+    return [[Log alloc] initWithIdentifier:identifier bundleIdentifier:bundleIdentifier title:title subtitle:subtitle content:content andDate:date];
 }
 
 - (NSString *)getDisplayName {

@@ -108,6 +108,15 @@
         [specifiers addObject:titleSpecifier];
     }
 
+    if ([[self log] subtitle]) {
+        PSSpecifier* subtitleSpecifier = [PSSpecifier preferenceSpecifierNamed:nil target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
+        [subtitleSpecifier setProperty:[VeDetailCell class] forKey:@"cellClass"];
+        [subtitleSpecifier setButtonAction:@selector(copyContent:)];
+        [subtitleSpecifier setProperty:@"Subtitle" forKey:@"title"];
+        [subtitleSpecifier setProperty:[[self log] subtitle] forKey:@"content"];
+        [specifiers addObject:subtitleSpecifier];
+    }
+
     if (![[[self log] content] isEqualToString:@""]) {
         PSSpecifier* contentSpecifier = [PSSpecifier preferenceSpecifierNamed:nil target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
         [contentSpecifier setProperty:[VeDetailCell class] forKey:@"cellClass"];
