@@ -23,7 +23,7 @@
 @end
 
 @interface UIImage (Private)
-+ (id)_applicationIconImageForBundleIdentifier:(NSString *)bundleIdentifier format:(NSUInteger)format scale:(CGFloat)scale;
++ (UIImage *)_applicationIconImageForBundleIdentifier:(NSString *)bundleIdentifier format:(NSUInteger)format scale:(CGFloat)scale;
 @end
 
 @interface _UIGrabber : UIControl

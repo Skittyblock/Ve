@@ -9,9 +9,14 @@
 #import <substrate.h>
 #import <objc/runtime.h>
 #import <Preferences/PSSpecifier.h>
-#import "Controllers/VeLogsListController.h"
 #import "../../Preferences/PreferenceKeys.h"
 #import "../../Preferences/NotificationKeys.h"
+#import "../../PrivateHeaders.h"
+#import "VeTarget-Swift.h"
+
+void openApplication(NSString *bundleIdentifier) {
+    [[objc_getClass("LSApplicationWorkspace") defaultWorkspace] openApplicationWithBundleID:bundleIdentifier];
+}
 
 #pragma mark - BulletinBoardController class hooks
 
