@@ -16,9 +16,6 @@ class VeAttachmentCell: PSTableCell {
             specifier: specifier
         )
 
-        let image = specifier?.property(forKey: "image") as? UIImage
-
-        attachmentImageView.image = image
         attachmentImageView.contentMode = .scaleAspectFill
         attachmentImageView.clipsToBounds = true
         attachmentImageView.layer.cornerRadius = 6
@@ -29,12 +26,6 @@ class VeAttachmentCell: PSTableCell {
         attachmentTitleLabel.font = .systemFont(ofSize: 17, weight: .medium)
         addSubview(attachmentTitleLabel)
 
-        let size = image?.size ?? .zero
-        attachmentSizeLabel.text = String(
-            format: "Width: %.0fpx Height: %.0fpx",
-            Double(size.width),
-            Double(size.height)
-        )
         attachmentSizeLabel.textColor = UIColor.label.withAlphaComponent(0.6)
         attachmentSizeLabel.font = .systemFont(ofSize: 14, weight: .regular)
         addSubview(attachmentSizeLabel)
@@ -54,6 +45,8 @@ class VeAttachmentCell: PSTableCell {
             attachmentSizeLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             attachmentSizeLabel.centerYAnchor.constraint(equalTo: attachmentImageView.centerYAnchor, constant: 11)
         ])
+
+        configure(with: specifier)
     }
 
     override init(
@@ -65,5 +58,27 @@ class VeAttachmentCell: PSTableCell {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func refreshCellContents(with specifier: PSSpecifier?) {
+        super.refreshCellContents(with: specifier)
+        configure(with: specifier)
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        configure(with: nil)
+    }
+
+    private func configure(with specifier: PSSpecifier?) {
+        let image = specifier?.property(forKey: "image") as? UIImage
+        let size = image?.size ?? .zero
+
+        attachmentImageView.image = image
+        attachmentSizeLabel.text = String(
+            format: "Width: %.0fpx Height: %.0fpx",
+            Double(size.width),
+            Double(size.height)
+        )
     }
 }

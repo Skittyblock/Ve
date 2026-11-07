@@ -15,10 +15,6 @@ class VeDetailCell: PSTableCell {
             specifier: specifier
         )
 
-        let title = specifier?.property(forKey: "title") as? String
-        let content = specifier?.property(forKey: "content") as? String
-
-        detailContentLabel.text = content
         detailContentLabel.textColor = UIColor.label.withAlphaComponent(0.6)
         detailContentLabel.font = .systemFont(ofSize: 17, weight: .regular)
         detailContentLabel.textAlignment = .right
@@ -26,7 +22,6 @@ class VeDetailCell: PSTableCell {
         detailContentLabel.setMarqueeRunning(true)
         addSubview(detailContentLabel)
 
-        detailTitleLabel.text = title
         detailTitleLabel.textColor = .label
         detailTitleLabel.font = .systemFont(ofSize: 17, weight: .medium)
         addSubview(detailTitleLabel)
@@ -40,6 +35,8 @@ class VeDetailCell: PSTableCell {
             detailTitleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             detailTitleLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
+
+        configure(with: specifier)
     }
 
     override init(
@@ -51,5 +48,23 @@ class VeDetailCell: PSTableCell {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func refreshCellContents(with specifier: PSSpecifier?) {
+        super.refreshCellContents(with: specifier)
+        configure(with: specifier)
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        configure(with: nil)
+    }
+
+    private func configure(with specifier: PSSpecifier?) {
+        let title = specifier?.property(forKey: "title") as? String
+        let content = specifier?.property(forKey: "content") as? String
+
+        detailTitleLabel.text = title
+        detailContentLabel.text = content
     }
 }

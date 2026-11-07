@@ -16,15 +16,6 @@ class VeLogCell: PSTableCell {
             specifier: specifier
         )
 
-        let log = specifier?.property(forKey: "log") as? Log
-
-        if let log {
-            iconImageView.image = UIImage._applicationIconImage(
-                forBundleIdentifier: log.bundleIdentifier,
-                format: 1,
-                scale: 2
-            )
-        }
         iconImageView.contentMode = .scaleAspectFit
         iconImageView.clipsToBounds = true
         iconImageView.layer.cornerRadius = 7
@@ -32,16 +23,10 @@ class VeLogCell: PSTableCell {
         iconImageView.layer.borderColor = UIColor.label.withAlphaComponent(0.1).cgColor
         addSubview(iconImageView)
 
-        if let log {
-            logTitleLabel.text = log.title.isEmpty ? log.getDisplayName() : log.title
-        }
         logTitleLabel.textColor = .label
         logTitleLabel.font = .systemFont(ofSize: 16, weight: .medium)
         addSubview(logTitleLabel)
 
-        if let log {
-            logContentLabel.text = log.content.isEmpty ? "N/A" : log.content
-        }
         logContentLabel.textColor = UIColor.label.withAlphaComponent(0.6)
         logContentLabel.font = .systemFont(ofSize: 14, weight: .regular)
         addSubview(logContentLabel)
@@ -61,6 +46,8 @@ class VeLogCell: PSTableCell {
             logContentLabel.leadingAnchor.constraint(equalTo: iconImageView.trailingAnchor, constant: 10),
             logContentLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -32)
         ])
+
+        configure(with: specifier)
     }
 
     override init(
@@ -72,5 +59,32 @@ class VeLogCell: PSTableCell {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func refreshCellContents(with specifier: PSSpecifier?) {
+        super.refreshCellContents(with: specifier)
+        configure(with: specifier)
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        configure(with: nil)
+    }
+
+    private func configure(with specifier: PSSpecifier?) {
+        guard let log = specifier?.property(forKey: "log") as? Log else {
+            iconImageView.image = nil
+            logTitleLabel.text = nil
+            logContentLabel.text = nil
+            return
+        }
+
+        iconImageView.image = UIImage._applicationIconImage(
+            forBundleIdentifier: log.bundleIdentifier,
+            format: 1,
+            scale: 2
+        )
+        logTitleLabel.text = log.title.isEmpty ? log.getDisplayName() : log.title
+        logContentLabel.text = log.content.isEmpty ? "N/A" : log.content
     }
 }

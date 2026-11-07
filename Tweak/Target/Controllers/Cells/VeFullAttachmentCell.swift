@@ -14,9 +14,6 @@ class VeFullAttachmentCell: PSTableCell {
             specifier: specifier
         )
 
-        let image = specifier?.property(forKey: "image") as? UIImage
-
-        attachmentImageView.image = image
         attachmentImageView.contentMode = .scaleAspectFill
         addSubview(attachmentImageView)
 
@@ -27,6 +24,8 @@ class VeFullAttachmentCell: PSTableCell {
             attachmentImageView.trailingAnchor.constraint(equalTo: trailingAnchor),
             attachmentImageView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
+
+        configure(with: specifier)
     }
 
     override init(
@@ -38,5 +37,20 @@ class VeFullAttachmentCell: PSTableCell {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func refreshCellContents(with specifier: PSSpecifier?) {
+        super.refreshCellContents(with: specifier)
+        configure(with: specifier)
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        configure(with: nil)
+    }
+
+    private func configure(with specifier: PSSpecifier?) {
+        let image = specifier?.property(forKey: "image") as? UIImage
+        attachmentImageView.image = image
     }
 }
